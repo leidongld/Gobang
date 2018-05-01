@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
 
+import butterknife.ButterKnife;
+
 public class MainActivity extends Activity {
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,6 +17,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         initWidgets();
 

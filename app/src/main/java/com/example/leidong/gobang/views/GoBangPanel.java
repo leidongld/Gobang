@@ -1,6 +1,8 @@
 package com.example.leidong.gobang.views;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,12 +14,11 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import com.example.leidong.gobang.R;
+import com.example.leidong.gobang.utils.ChessUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GoBangPanel extends View {
     private int mPanelWidth;
@@ -45,7 +46,6 @@ public class GoBangPanel extends View {
 
     public GoBangPanel(Context context, AttributeSet attrs){
         super(context, attrs);
-        //setBackgroundColor(0x44ff0000);
         init();
     }
 
@@ -104,187 +104,37 @@ public class GoBangPanel extends View {
 
         drawChesses(canvas);
 
-        chackGameOver();
+        checkGameOver();
     }
 
     /**
      * 查看游戏是否结束
      */
-    private void chackGameOver() {
-        boolean whiteWin = checkWin(mWhiteArray);
-        boolean blackWin = checkWin(mBlackArray);
+    private void checkGameOver() {
+        boolean whiteWin = ChessUtils.checkWin(mWhiteArray);
+        boolean blackWin = ChessUtils.checkWin(mBlackArray);
         if(whiteWin || blackWin){
             mIsGameOver = true;
             mIsWhite = whiteWin;
 
             String text = mIsWhite ? "白棋赢" : "黑棋赢";
 
-            Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("提示");
+            builder.setMessage(text);
+            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    mWhiteArray.clear();
+                    mBlackArray.clear();
+                    mIsGameOver = false;
+                    mIsWhite = false;
+                    invalidate();
+                }
+            });
+            builder.setNegativeButton("取消", null);
+            builder.create().show();
         }
-    }
-
-    /**
-     * 判断是否赢得比赛
-     * @param points
-     * @return
-     */
-    private boolean checkWin(List<Point> points) {
-        for (Point p : points) {
-            int x = p.x;
-            int y = p.y;
-            boolean winHorizontal = checkHorizontal(x, y, points);
-            boolean winVertical = checkVertical(x, y, points);
-            boolean winLeftRhombic = checkLeftRhombic(x, y, points);
-            boolean winRightRhombic = checkRightRhombic(x, y, points);
-            if(winHorizontal || winVertical || winLeftRhombic || winRightRhombic){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * （x,y）坐标的棋子是否右斜方连成5个
-     * @param x
-     * @param y
-     * @param points
-     * @return
-     */
-    private boolean checkRightRhombic(int x, int y, List<Point> points) {
-        int count = 1;
-        //右上
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++){
-            if(points.contains(new Point(x + i, y - i))){
-                count++;
-            }
-            else{
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-
-        //左下
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++) {
-            if (points.contains(new Point(x - i, y + i))) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * （x,y）坐标的棋子是否左斜方连成5个
-     * @param x
-     * @param y
-     * @param points
-     * @return
-     */
-    private boolean checkLeftRhombic(int x, int y, List<Point> points) {
-        int count = 1;
-        //左上
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++){
-            if(points.contains(new Point(x - i, y - i))){
-                count++;
-            }
-            else{
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-
-        //右下
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++) {
-            if (points.contains(new Point(x + i, y + i))) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * （x,y）坐标相邻的棋子是否纵向连成5个
-     * @param x
-     * @param y
-     * @param points
-     * @return
-     */
-    private boolean checkVertical(int x, int y, List<Point> points) {
-        int count = 1;
-        //上边
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++){
-            if(points.contains(new Point(x, y - i))){
-                count++;
-            }
-            else{
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-
-        //下边
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++) {
-            if (points.contains(new Point(x, y + i))) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * （x,y）坐标的棋子是否横向连成5个
-     * @param x
-     * @param y
-     * @param points
-     * @return
-     */
-    private boolean checkHorizontal(int x, int y, List<Point> points) {
-        int count = 1;
-        //左边
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++){
-            if(points.contains(new Point(x - i, y))){
-                count++;
-            }
-            else{
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-
-        //右边
-        for(int i = 1; i < MAX_COUNT_IN_LINE; i++) {
-            if (points.contains(new Point(x + i, y))) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        if(count == MAX_COUNT_IN_LINE){
-            return true;
-        }
-        return false;
     }
 
     /**
